@@ -1,6 +1,5 @@
 
 import os
-import dateutil
 from os import stat
 import time
 import moment
@@ -9,8 +8,9 @@ BASEDIR = r'C:\Users\bundi\Downloads\\'
 
 isoFiles = []
 isoDirs = []
+imgFormats = {".iso", ".bin"}
+arcFormats = {".rar", ".zip", ".7z", ".gz"}
 
-filesOnly = os.scandir(BASEDIR)
 
 def dateCheck(item):
     itemTime = os.path.getatime(item)
@@ -37,30 +37,30 @@ def dateCheck(item):
     print("-----------------")
 
 
+# Clean out old disc image files left over from decompression
+
+# Start at top level of directory
+filesOnly = os.scandir(BASEDIR)
 for thisFile in filesOnly:
     if os.path.isfile(thisFile):
-        if os.path.splitext(thisFile)[1] == ".iso":
+        if os.path.splitext(thisFile)[1] in imgFormats:
             isoFiles.append(thisFile)
             dateCheck(thisFile)
+            break
 
+# Recurse into subdirectories; flag parent for deletion
 dirsOnly = os.listdir(BASEDIR)
-
 for searchDir in os.scandir(BASEDIR):
     if os.path.isdir(searchDir):
         for seekFile in os.listdir(searchDir):
-            if os.path.splitext(seekFile)[1] == ".iso":
+            if os.path.splitext(seekFile)[1] in imgFormats:
                 dateCheck(searchDir)
                 isoDirs.append(searchDir)
-                break
 
-'''
-print("---- FILES ----")
-for isoFile in isoFiles:
-    print(isoFile)
 
-print("\n")
-
-print("---- DIR ----")
-for isoDir in isoDirs:
-    print(isoDir)
-'''
+# Scour archive files the same way, but we only have to worry about top level
+filesOnly = os.scandir(BASEDIR)
+for thisFile in filesOnly:
+    if os.path.isfile(thisFile):
+        if os.path.splitext(thisFile)[1] in arcFormats:
+            dateCheck(thisFile)
